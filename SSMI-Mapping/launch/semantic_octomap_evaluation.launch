@@ -2,7 +2,7 @@
 <launch>
 
   <rosparam file="$(find semantic_octomap)/params/semantic_cloud_evaluation_gazebo.yaml" command="load"/>
-  <rosparam file="$(find semantic_octomap)/params/semantic_labels_jrcv.yaml" command="load"/>
+  <rosparam file="$(find semantic_octomap)/params/semantic_labels.yaml" command="load"/>
   <node pkg="semantic_octomap" type="semantic_sensor_node.py" name="semantic_cloud" output="screen"/>
 
   <rosparam file="$(find semantic_octomap)/params/octomap_generator_evaluation_gazebo.yaml" command="load"/>
