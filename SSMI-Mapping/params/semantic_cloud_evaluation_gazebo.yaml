@@ -1,0 +1,18 @@
+# Camera intrinsic matrix parameters
+camera:
+  fx: 381.362467
+  fy: 381.362467
+  cx: 200
+  cy: 200
+
+  width: 400
+  height: 400
+
+semantic_pcl:
+  color_image_topic: "/camera2/color/rgb"
+  semantic_image_topic: "/camera2/color/semantics"
+  depth_image_topic: "/camera2/color/depth"
+  point_type: 0
+  frame_id: "camera2_frame"
+  depth_noise_std: 0.0
+  true_class_prob: 1.0

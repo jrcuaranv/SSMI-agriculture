@@ -8,6 +8,19 @@
 
 #include <semantic_octomap/LE.h>
 #include <semantic_octomap/RayRLE.h>
+#include <pcl/point_types.h> //jrcv
+#include <pcl/point_cloud.h> //jrcv
+#include <pcl/segmentation/extract_clusters.h> //jrcv
+#include <pcl/common/centroid.h>
+#include <pcl/common/common.h>
+#include <pcl/surface/convex_hull.h>
+#include <chrono> 
+// for dbscan
+#include "dbscan_clustering.hpp"  // DBSCAN
+#include "dbscan_point_cloud.hpp" // PointCloud
+// #include <csignal>  // std::signal
+// #include <memory>   // std::unique_ptr
+// #include <variant>  // std::variant
 
 namespace octomap
 {
@@ -29,6 +42,8 @@ namespace octomap
 
     inline float getPhi() const {return phiTree;}
 
+    inline std::vector<octomap::point3d> getSemanticCentroids() const {return semanticCentroids;}
+
     inline float getPsi() const {return psiTree;}
 
     inline float getMaxLogOdds() const {return maxLogOddsTree;}
@@ -36,6 +51,8 @@ namespace octomap
     inline float getMinLogOdds() const {return minLogOddsTree;}
 
     inline void setPhi(float phi) {phiTree = phi;}
+
+    inline void setSemanticCentroids(std::vector<octomap::point3d> semantic_centroids) {semanticCentroids = semantic_centroids;}
 
     inline void setPsi(float psi) {psiTree = psi;}
 
@@ -58,12 +75,8 @@ namespace octomap
     virtual bool isNodeCollapsible(const SemanticOcTreeNode<SEMANTICS>* node) const;
 
     bool isUseSemanticColor(){return this->root->use_semantic_color;}
-    
-    bool doesWriteSemantics(){return this->root->write_semantics;}
 
     void setUseSemanticColor(bool use);
-    
-    void setWriteSemantics(bool write);
 
     // set node color at given key or coordinate. Replaces previous color.
     SemanticOcTreeNode<SEMANTICS>* setNodeColor(const OcTreeKey& key, uint8_t r,
@@ -117,18 +130,6 @@ namespace octomap
     /// Update logodds for a given node which is observed as free
     SemanticOcTreeNode<SEMANTICS>* updateFreeNode(SemanticOcTreeNode<SEMANTICS>* node);
 
-    /// Update node from an incoming semantic octomap by doing bayesian fusion
-    virtual SemanticOcTreeNode<SEMANTICS>* updateNode(const OcTreeKey& key, float node_value,
-                                                      const ColorOcTreeNode::Color& node_color,
-                                                      const SEMANTICS& node_semantics,
-                                                      float consensus_weight, bool lazy_eval = false);
-
-    /// Update node from an incoming semantic octomap by doing bayesian fusion
-    virtual SemanticOcTreeNode<SEMANTICS>* updateNode(float x, float y, float z, float node_value,
-                                                      const ColorOcTreeNode::Color& node_color,
-                                                      const SEMANTICS& node_semantics,
-                                                      float consensus_weight, bool lazy_eval = false);
-
     /// Update node from a new observation by doing bayesian fusion
     virtual SemanticOcTreeNode<SEMANTICS>* updateNode(const OcTreeKey& key, bool occupied,
                                                       const ColorOcTreeNode::Color& class_obs = ColorOcTreeNode::Color(255,255,255),
@@ -140,10 +141,6 @@ namespace octomap
                                                       const ColorOcTreeNode::Color& class_obs = ColorOcTreeNode::Color(255,255,255),
                                                       const ColorOcTreeNode::Color& color_obs = ColorOcTreeNode::Color(255,255,255),
                                                       bool lazy_eval = false);
-
-    /// Update semantic logodds value of node by fusing the incoming node
-    virtual void updateNodeLogOdds(SemanticOcTreeNode<SEMANTICS>* node, const ColorOcTreeNode::Color& node_color,
-                                   const SEMANTICS& output_sem, const float& output_value);
 
     /// Update semantic logodds value of node by adding the new observation
     virtual void updateNodeLogOdds(SemanticOcTreeNode<SEMANTICS>* node, bool occupied,
@@ -157,22 +154,15 @@ namespace octomap
     void updateInnerOccupancy();
     
     bool get_ray_RLE(const octomap::point3d& origin, const octomap::point3d& end, semantic_octomap::RayRLE& rayRLE_msg);
-
+    bool compute_centroids(std::vector<octomap::point3d>& sem_centroids, std::string& output_dir);
     protected:
     void updateInnerOccupancyRecurs(SemanticOcTreeNode<SEMANTICS>* node, unsigned int depth);
     
     SemanticOcTreeNode<SEMANTICS>* updateNodeRecurs(SemanticOcTreeNode<SEMANTICS>* node, bool node_just_created, const OcTreeKey& key,
                                                     unsigned int depth, bool occupied, const ColorOcTreeNode::Color& class_obs,
                                                     const ColorOcTreeNode::Color& color_obs, bool lazy_eval = false);
-
-    SemanticOcTreeNode<SEMANTICS>* updateNodeRecurs(SemanticOcTreeNode<SEMANTICS>* node, bool node_just_created, const OcTreeKey& key,
-                                                    unsigned int depth, const ColorOcTreeNode::Color& node_color,
-                                                    const SEMANTICS& output_sem, const float& output_value, bool lazy_eval = false);
     
     bool checkNeedsUpdate(const SemanticOcTreeNode<SEMANTICS>* node, bool occupied, const ColorOcTreeNode::Color& class_obs);
-    
-    bool checkNeedsUpdate(const SemanticOcTreeNode<SEMANTICS>* node, float node_value, const SEMANTICS& node_semantics,
-                          float consensus_weight, SEMANTICS& output_sem, float& output_value);
 
     /**
      * Static member object which ensures that this OcTree's prototype
@@ -204,6 +194,7 @@ namespace octomap
     float phiTree, psiTree;
     float maxLogOddsTree, minLogOddsTree;
     float minOccupancyLogOdds;
+    std::vector<octomap::point3d> semanticCentroids;
 };
 
 } // end namespace

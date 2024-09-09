@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<launch>
+
+  <rosparam file="$(find semantic_octomap)/params/semantic_cloud_evaluation_gazebo.yaml" command="load"/>
+  <rosparam file="$(find semantic_octomap)/params/semantic_labels_jrcv.yaml" command="load"/>
+  <node pkg="semantic_octomap" type="semantic_sensor_node.py" name="semantic_cloud" output="screen"/>
+
+  <rosparam file="$(find semantic_octomap)/params/octomap_generator_evaluation_gazebo.yaml" command="load"/>
+  <node pkg="semantic_octomap" type="semantic_octomap" name="semantic_octomap" output="screen"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find semantic_octomap)/config/octomap_rviz_config.rviz" respawn="false" output="screen"/>
+</launch>

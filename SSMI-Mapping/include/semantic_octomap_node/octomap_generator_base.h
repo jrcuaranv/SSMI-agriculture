@@ -50,19 +50,14 @@ public:
     virtual void insertPointCloud(const pcl::PCLPointCloud2::Ptr& cloud, const Eigen::Matrix4f& sensorToWorld) = 0;
     
     virtual bool get_ray_RLE(const octomap::point3d& origin, const octomap::point3d& end, semantic_octomap::RayRLE& rayRLE_msg) = 0;
-
+    virtual bool compute_centroids(std::vector<octomap::point3d>& sem_centroids, std::string& output_dir) = 0; //jrcv
+    
+    
     /// Set whether use semantic color for serialization
     virtual void setUseSemanticColor(bool use) = 0;
 
     /// Get whether use semantic color for serialization
     virtual bool isUseSemanticColor() = 0;
-    
-    /// Set whether write semantics for serialization
-    virtual void setWriteSemantics(bool write) = 0;
-
-    /// Get whether write semantics for serialization
-    virtual bool doesWriteSemantics() = 0;
-
 
     /// Get octree
     virtual OCTREE* getOctree() = 0;

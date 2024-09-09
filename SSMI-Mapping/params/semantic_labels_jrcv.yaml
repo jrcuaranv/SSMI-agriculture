@@ -1,0 +1,6 @@
+# Param file needed to add artificial pixel-wise classification error
+class_labels:
+  num_classes: 3
+  color_1: {r: 0, g: 0, b: 0, a: 1}
+  color_2: {r: 1, g: 0, b: 0, a: 1}
+  color_3: {r: 0, g: 1, b: 0, a: 1}

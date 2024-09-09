@@ -25,26 +25,16 @@ bool OctomapGenerator<CLOUD, OCTREE>::isUseSemanticColor()
 }
 
 template<class CLOUD, class OCTREE>
-void OctomapGenerator<CLOUD, OCTREE>::setWriteSemantics(bool write)
-{
-    octomap_.setWriteSemantics(write);
-}
-
-template<class CLOUD, class OCTREE>
-bool OctomapGenerator<CLOUD, OCTREE>::doesWriteSemantics()
-{
-    return octomap_.doesWriteSemantics();
-}
-
-template<class CLOUD, class OCTREE>
 void OctomapGenerator<CLOUD, OCTREE>::insertPointCloud(const pcl::PCLPointCloud2::Ptr& cloud, const Eigen::Matrix4f& sensorToWorld)
 {
     // Voxel filter to down sample the point cloud
     // Create the filtering object
     pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2 ());
     // Perform voxel filter
-    float voxel_flt_size = octomap_.getResolution();
+    float voxel_flt_size = octomap_.getResolution(); // /4 added by jrcv
+    // float voxel_flt_size = 0.015;
     pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+    
     sor.setInputCloud (cloud);
     sor.setLeafSize (voxel_flt_size, voxel_flt_size, voxel_flt_size);
     sor.filter (*cloud_filtered);
@@ -72,14 +62,22 @@ void OctomapGenerator<CLOUD, OCTREE>::insertPointCloud(const pcl::PCLPointCloud2
                 octomap::ColorOcTreeNode::Color color_obs(it->r, it->g, it->b);
                 octomap::ColorOcTreeNode::Color class_obs;
                 // Get semantics
-                uint32_t rgb;
+                uint32_t rgb = 0;
                 std::memcpy(&rgb, &it->semantic_color, sizeof(uint32_t));
                 class_obs.r = (rgb >> 16) & 0x0000ff;
                 class_obs.g = (rgb >> 8)  & 0x0000ff;
                 class_obs.b = (rgb)       & 0x0000ff;
-            
-                octomap_.updateNode(it->x, it->y, it->z, true, class_obs, color_obs, false);
-            
+
+                
+                // a condition to prevent weird color observations out of the categories, jrcv
+                // aparantly the issue comes after filtering the pointcloud in the code above, as
+                // the filter computes an average between colors. jrcv
+                if (class_obs==octomap::ColorOcTreeNode::Color(0,0,0) || 
+                class_obs==octomap::ColorOcTreeNode::Color(255,0,0) ||
+                class_obs==octomap::ColorOcTreeNode::Color(0,255,0)){
+                    octomap_.updateNode(it->x, it->y, it->z, true, class_obs, color_obs, false);
+                }
+                
                 endpoint_count++;
             }
             
@@ -99,6 +97,18 @@ template<class CLOUD, class OCTREE>
 bool OctomapGenerator<CLOUD, OCTREE>::get_ray_RLE(const octomap::point3d& origin, const octomap::point3d& end, semantic_octomap::RayRLE& rayRLE_msg)
 {
     if (octomap_.get_ray_RLE(origin, end, rayRLE_msg))
+    {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+template<class CLOUD, class OCTREE>
+bool OctomapGenerator<CLOUD, OCTREE>::compute_centroids(std::vector<octomap::point3d>& sem_centroids, std::string& output_dir)
+{
+    if (octomap_.compute_centroids(sem_centroids, output_dir))
     {
         return true;
     } else {

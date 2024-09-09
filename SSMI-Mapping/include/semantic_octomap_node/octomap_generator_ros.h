@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Float32.h>
 #include <semantic_octomap_node/octomap_generator.h>
 #include <std_srvs/Empty.h>
 #include <semantic_octomap/GetRLE.h>
@@ -34,8 +35,13 @@ public:
      * \param cloud ROS Pointcloud2 message in arbitrary frame (specified in the clouds header)
      */
     void insertCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud);
+
+    void resetCallback(const std_msgs::Float32::ConstPtr& msg);
     
     void publish2DOccupancyMap(const SemanticOctree* octomap,
+                               const ros::Time& stamp,
+                               const std::string& frame_id);
+    void publishSemanticCentroids(const SemanticOctree* octomap,
                                const ros::Time& stamp,
                                const std::string& frame_id);
     
@@ -52,9 +58,12 @@ protected:
     bool toggleUseSemanticColor(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response); ///<Function to toggle whether write semantic color or rgb color as when serializing octree
     bool querry_RLE(semantic_octomap::GetRLE::Request& request, semantic_octomap::GetRLE::Response& response);
     ros::NodeHandle nh_; ///<ROS handler
-    ros::Publisher fullmap_pub_; ///<ROS publisher for full octomap message
-    ros::Publisher colormap_pub_; ///<ROS publisher for color octomap message
+    ros::Publisher fullmap_pub_; ///<ROS publisher for octomap message
+    ros::Publisher semantic_centroids_pub_; ///
+    ros::Publisher octomap_status_pub_; // to check when octomap update is done
+    ros::Publisher coarse_pointcloud_pub_; // pointclou used for collision avoidance
     ros::Publisher occ_map_pub_; ///<ROS publisher for 2D occupancy map message
+    ros::Subscriber reset_octomap_sub_;
     message_filters::Subscriber<sensor_msgs::PointCloud2>* pointcloud_sub_; ///<ROS subscriber for pointcloud message
     tf::MessageFilter<sensor_msgs::PointCloud2>* tf_pointcloud_sub_; ///<ROS tf message filter to sychronize the tf and pointcloud messages
     tf::TransformListener tf_listener_; ///<Listener for the transform between the camera and the world coordinates
@@ -74,6 +83,7 @@ protected:
     double min_ground_z;
     double max_ground_z;
     octomap_msgs::Octomap map_msg_; ///<ROS octomap message
+    std::string output_dir_;
 };
 
 #endif //SEMANTIC_OCTOMAP_OCTOMAP_GENERATOR_ROS_H

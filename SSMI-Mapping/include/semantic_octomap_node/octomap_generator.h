@@ -79,14 +79,10 @@ public:
     virtual void insertPointCloud(const pcl::PCLPointCloud2::Ptr& cloud, const Eigen::Matrix4f& sensorToWorld);
     
     virtual bool get_ray_RLE(const octomap::point3d& origin, const octomap::point3d& end, semantic_octomap::RayRLE& rayRLE_msg);
-
+    virtual bool compute_centroids(std::vector<octomap::point3d>& sem_centroids, std::string& output_dir);
     virtual void setUseSemanticColor(bool use);
 
     virtual bool isUseSemanticColor();
-    
-    virtual void setWriteSemantics(bool write);
-
-    virtual bool doesWriteSemantics();
 
     virtual OCTREE* getOctree(){return &octomap_;}
 
