@@ -11,9 +11,9 @@ import time
 
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-from skimage.transform import resize
+# from skimage.transform import resize
 from sensor_msgs.msg import PointCloud2
-from semantic_sensor import PointType, SemanticPclGenerator
+from ssmi_sensors.semantic_sensor import PointType, SemanticPclGenerator
 
 
 class SemanticCloud:
@@ -90,19 +90,19 @@ class SemanticCloud:
             print(e)
 
         # Resize depth
-        if depth_img.shape[0] != self.img_height or depth_img.shape[1] != self.img_width:
-            depth_img = resize(depth_img, (self.img_height, self.img_width), order = 0, mode = 'reflect',
-                               anti_aliasing=False, preserve_range = True) # order = 0, nearest neighbour
-            depth_img = depth_img.astype(np.float32)
+        # if depth_img.shape[0] != self.img_height or depth_img.shape[1] != self.img_width:
+        #     depth_img = resize(depth_img, (self.img_height, self.img_width), order = 0, mode = 'reflect',
+        #                        anti_aliasing=False, preserve_range = True) # order = 0, nearest neighbour
+        #     depth_img = depth_img.astype(np.float32)
 
         # Resize semantic
-        if semantic_img.shape[0] != self.img_height or semantic_img.shape[1] != self.img_width:
-            print(semantic_img.shape)
-            print("=======Resizing image==========")
-            semantic_img = resize(semantic_img, (self.img_height, self.img_width), order = 0, mode = 'reflect',
-                                  anti_aliasing=False, preserve_range = True) # order = 0, nearest neighbour
-            semantic_img = semantic_img.astype(np.uint8)
-            print(semantic_img.shape)
+        # if semantic_img.shape[0] != self.img_height or semantic_img.shape[1] != self.img_width:
+        #     print(semantic_img.shape)
+        #     print("=======Resizing image==========")
+        #     semantic_img = resize(semantic_img, (self.img_height, self.img_width), order = 0, mode = 'reflect',
+        #                           anti_aliasing=False, preserve_range = True) # order = 0, nearest neighbour
+        #     semantic_img = semantic_img.astype(np.uint8)
+        #     print(semantic_img.shape)
         # Add noise
         if self.noisy_obs is True:
             print("========adding noise =============")

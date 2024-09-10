@@ -50,6 +50,7 @@ add_service_files(
   FILES GetRLE.srv
 )
 
+catkin_python_setup()
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
@@ -136,8 +137,8 @@ install(DIRECTORY
   )
 
 catkin_install_python(PROGRAMS
-  scripts/semantic_sensor_node.py
-  scripts/semantic_sensor.py
+  scripts/ssmi_sensors/semantic_sensor_node.py
+  scripts/ssmi_sensors/semantic_sensor.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(TARGETS semantic_octomap

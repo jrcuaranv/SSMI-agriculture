@@ -14,4 +14,4 @@ octomap:
     publish_2d_map: false
     min_ground_z: 1.0
     max_ground_z: 3.5
-    save_path: /home/jose/results_mapping/
+    save_path: /home/daslab/results_mapping/
